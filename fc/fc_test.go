@@ -63,5 +63,6 @@ func TestFeedFoward_Success(t *testing.T) {
 		fc.feedFoward([]float64{.05, .10})
 
 		assert.InDelta(t, 0.75136507, fc.layers[1].out[0], 0.000000001)
+		assert.InDelta(t, 0.772928465, fc.layers[1].out[1], 0.000000001)
 	})
 }
