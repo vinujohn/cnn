@@ -1,6 +1,9 @@
 package fc
 
-import "math/rand"
+import (
+	"math"
+	"math/rand"
+)
 
 type layer struct {
 	weights [][]float64
@@ -49,4 +52,34 @@ func NewFC(sizes ...uint) *FC {
 	return &FC{
 		layers: layers,
 	}
+}
+
+func (fc *FC) feedFoward(input []float64) {
+	for _, layer := range fc.layers {
+		for l, nodeWeights := range layer.weights {
+			net := dot(nodeWeights, input) + layer.bias
+			layer.out[l] = sigmoid(net)
+		}
+		input = layer.out
+	}
+}
+
+func sigmoid(x float64) float64 {
+	return 1 / (1 + math.Exp(-x))
+}
+
+func sigmoidPrime(x float64) float64 {
+	return x * (1 - x)
+}
+
+func dot(x, y []float64) float64 {
+	if len(x) != len(y) {
+		panic("vector inputs for dot product must be equal")
+	}
+
+	var sum float64
+	for i := 0; i < len(x); i++ {
+		sum += x[i] * y[i]
+	}
+	return sum
 }
