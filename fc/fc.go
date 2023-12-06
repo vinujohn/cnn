@@ -6,9 +6,9 @@ import (
 )
 
 type layer struct {
-	weights [][]float64
-	bias    float64
-	out     []float64
+	weights [][]float64 // [node in this layer][weight for previous layer node]
+	bias    float64     // same bias for all nodes in this layer
+	out     []float64   // output for all nodes in this layer
 }
 
 type FC struct {
