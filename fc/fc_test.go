@@ -43,7 +43,7 @@ func TestNewFC_Success(t *testing.T) {
 }
 
 // Example from: https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example
-func TestFeedFoward_Success(t *testing.T) {
+func TestPredict_Success(t *testing.T) {
 	t.Run("2_2_2_network", func(t *testing.T) {
 		fc := NewFC(2, 2, 2)
 		// layer 0
@@ -60,9 +60,9 @@ func TestFeedFoward_Success(t *testing.T) {
 		fc.layers[1].weights[1][1] = .55
 		fc.layers[1].bias = .60
 
-		fc.feedFoward([]float64{.05, .10})
+		prediction := fc.Predict([]float64{.05, .10})
 
-		assert.InDelta(t, 0.75136507, fc.layers[1].out[0], 0.000000001)
-		assert.InDelta(t, 0.772928465, fc.layers[1].out[1], 0.000000001)
+		assert.InDelta(t, 0.75136507, prediction[0], 0.000000001)
+		assert.InDelta(t, 0.772928465, prediction[1], 0.000000001)
 	})
 }

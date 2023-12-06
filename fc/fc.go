@@ -13,6 +13,7 @@ type layer struct {
 
 type FC struct {
 	layers []*layer
+	sizes  []uint
 }
 
 // "sizes" are the individual sizes of each layer in the network with
@@ -51,16 +52,58 @@ func NewFC(sizes ...uint) *FC {
 
 	return &FC{
 		layers: layers,
+		sizes:  sizes,
 	}
 }
 
-func (fc *FC) feedFoward(input []float64) {
+func (fc *FC) feedfoward(input []float64) {
 	for _, layer := range fc.layers {
 		for l, nodeWeights := range layer.weights {
 			net := dot(nodeWeights, input) + layer.bias
 			layer.out[l] = sigmoid(net)
 		}
 		input = layer.out
+	}
+}
+
+func (fc *FC) backpropagation(truth []float64) {
+
+}
+
+func (fc *FC) updateWeights(learningRate float64) {
+
+}
+
+func (fc *FC) Predict(input []float64) []float64 {
+	if len(input) != int(fc.sizes[0]) {
+		panic("length of input does not equal expected input length")
+	}
+
+	fc.feedfoward(input)
+
+	return fc.layers[len(fc.layers)-1].out
+}
+
+func (fc *FC) Train(dataset, truth [][]float64, learningRate float64, epochs uint) {
+	if len(dataset) < 1 {
+		panic("dataset must be populated for training")
+	}
+	if len(dataset) != len(truth) {
+		panic("dataset length does not equal ground truth vector length")
+	}
+	if learningRate <= 0 {
+		panic("learning rate must be a positive number")
+	}
+	if epochs <= 0 {
+		panic("epochs must be a positive number")
+	}
+
+	for i := 0; i < int(epochs); i++ {
+		for j, input := range dataset {
+			fc.feedfoward(input)
+			fc.backpropagation(truth[j])
+			fc.updateWeights(learningRate)
+		}
 	}
 }
 
