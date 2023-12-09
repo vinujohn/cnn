@@ -1,6 +1,7 @@
 package fc
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -32,37 +33,71 @@ func TestNewFC_Success(t *testing.T) {
 		assert.Len(t, fc.layers, 2)
 
 		// 2 nodes for layer 0 with 3 weights each
-		assert.Len(t, fc.layers[0].weights, 2)
-		assert.Len(t, fc.layers[0].weights[0], 3)
-		assert.Len(t, fc.layers[0].weights[1], 3)
+		assert.Len(t, fc.layers[0].nodes, 2)
+		assert.Len(t, fc.layers[0].nodes[0].weights, 3)
+		assert.Len(t, fc.layers[0].nodes[1].weights, 3)
 
 		// 1 node for layer 1 with 2 weights each
-		assert.Len(t, fc.layers[1].weights, 1)
-		assert.Len(t, fc.layers[1].weights[0], 2)
+		assert.Len(t, fc.layers[1].nodes, 1)
+		assert.Len(t, fc.layers[1].nodes[0].weights, 2)
 	})
 }
 
-// Example from: https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example
 func TestPredict_Success(t *testing.T) {
 	t.Run("2_2_2_network", func(t *testing.T) {
-		fc := NewFC(2, 2, 2)
-		// layer 0
-		fc.layers[0].weights[0][0] = .15
-		fc.layers[0].weights[0][1] = .20
-		fc.layers[0].weights[1][0] = .25
-		fc.layers[0].weights[1][1] = .30
-		fc.layers[0].bias = .35
-
-		// layer 1
-		fc.layers[1].weights[0][0] = .40
-		fc.layers[1].weights[0][1] = .45
-		fc.layers[1].weights[1][0] = .50
-		fc.layers[1].weights[1][1] = .55
-		fc.layers[1].bias = .60
+		fc := Example_2_2_2_FC()
 
 		prediction := fc.Predict([]float64{.05, .10})
 
 		assert.InDelta(t, 0.75136507, prediction[0], 0.000000001)
 		assert.InDelta(t, 0.772928465, prediction[1], 0.000000001)
 	})
+}
+
+func TestTrain_Success(t *testing.T) {
+	t.Run("2_2_2_network", func(t *testing.T) {
+		fc := Example_2_2_2_FC()
+
+		fc.Train([][]float64{{.05, .10}}, [][]float64{{0.01, .99}}, 0.5, 1)
+
+		t.Logf("output:%v", nodesOutput(fc.layers[1].nodes))
+		t.Logf("hidden:%v", nodesOutput(fc.layers[0].nodes))
+	})
+}
+
+func nodesOutput(nodes []*fcNode) string {
+	var s string
+
+	for i, node := range nodes {
+		s += fmt.Sprintf(`
+		*****Node %d*****
+		weights: %v
+		delta: %v
+		netErr: %v
+		output: %v
+		*****************
+		`, i, node.weights, node.delta, node.netErr, node.output)
+	}
+
+	return s
+}
+
+// https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example
+func Example_2_2_2_FC() *FC {
+	fc := NewFC(2, 2, 2)
+	// hidden layer
+	fc.layers[0].nodes[0].weights[0] = .15
+	fc.layers[0].nodes[0].weights[1] = .20
+	fc.layers[0].nodes[1].weights[0] = .25
+	fc.layers[0].nodes[1].weights[1] = .30
+	fc.layers[0].bias = .35
+
+	// output layer
+	fc.layers[1].nodes[0].weights[0] = .40
+	fc.layers[1].nodes[0].weights[1] = .45
+	fc.layers[1].nodes[1].weights[0] = .50
+	fc.layers[1].nodes[1].weights[1] = .55
+	fc.layers[1].bias = .60
+
+	return fc
 }
