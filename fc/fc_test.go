@@ -58,10 +58,12 @@ func TestTrain_Success(t *testing.T) {
 	t.Run("2_2_2_network", func(t *testing.T) {
 		fc := Example_2_2_2_FC()
 
-		fc.Train([][]float64{{.05, .10}}, [][]float64{{0.01, .99}}, 0.5, 1)
+		fc.Train([][]float64{{.05, .10}}, [][]float64{{0.01, .99}}, 0.5, 10000)
 
-		t.Logf("output:%v", nodesOutput(fc.layers[1].nodes))
-		t.Logf("hidden:%v", nodesOutput(fc.layers[0].nodes))
+		prediction := fc.Predict([]float64{.05, .10})
+
+		assert.InDelta(t, 0.01, prediction[0], 0.01)
+		assert.InDelta(t, 0.99, prediction[1], 0.01)
 	})
 }
 

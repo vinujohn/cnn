@@ -6,7 +6,7 @@ import (
 )
 
 type fcNode struct {
-	weights []float64 // length = length of previous layer
+	weights []float64 // weights for input from previous layer
 	delta   float64   // derivative of loss function * derivative of logistic function
 	netErr  []float64 // delta * derivative of input
 	output  float64   // output for all nodes in this layer
@@ -17,6 +17,10 @@ type layer struct {
 	bias  float64 // same bias for all nodes in this layer
 }
 
+// FC is a fully connected network which is made up of layers of nodes.
+// A minimum of 2 layers are needed with one being the input/hidden layer
+// and the other being an output layer.  The input layer is not modeled
+// in code but rather is just an input to the first hidden layer.
 type FC struct {
 	layers []*layer
 	sizes  []uint
@@ -43,14 +47,14 @@ func NewFC(sizes ...uint) *FC {
 			bias:  rand.NormFloat64(),
 		}
 		for j := range layers[i].nodes {
-			weights := make([]float64, sizes[i]) // length = previous layer node size
+			weights := make([]float64, sizes[i]) // len = previous layer node size
 			for k := range weights {
 				weights[k] = rand.NormFloat64()
 			}
 
 			layers[i].nodes[j] = &fcNode{
 				weights: weights,
-				netErr:  make([]float64, sizes[i]), // length = previous layer node size
+				netErr:  make([]float64, sizes[i]), // len = previous layer node size
 			}
 		}
 	}
@@ -79,28 +83,31 @@ func (fc *FC) backpropagation(input, truth []float64) {
 	}
 
 	// loop back through all layers
-	for i := len(fc.layers) - 1; i >= 0; i-- {
-		layer := fc.layers[i]
+	for lIdx := len(fc.layers) - 1; lIdx >= 0; lIdx-- {
+		layer := fc.layers[lIdx]
 		// handle output layer
 		if layer == fc.outputLayer() {
-			for j, node := range layer.nodes {
-				for k := range node.weights {
-					// derivative of loss function * derivative of logistic function
-					node.delta = (node.output - truth[j]) * sigmoidPrime(node.output)
-					// * derivative of net input function
-					node.netErr[k] = node.delta * fc.layers[i-1].nodes[k].output
+			for nIdx, node := range layer.nodes {
+				// derivative of loss function * derivative of logistic function
+				node.delta = (node.output - truth[nIdx]) * sigmoidPrime(node.output)
+
+				for wIdx := range node.weights {
+					// node.delta * derivative of net input function
+					node.netErr[wIdx] = node.delta * fc.layers[lIdx-1].nodes[wIdx].output
 				}
 			}
 		} else {
-			for j, node := range layer.nodes {
-				for k := range node.weights {
-					for _, nextNode := range fc.layers[i+1].nodes {
-						node.delta += nextNode.delta * nextNode.weights[j]
+			// handle input and hidden layers
+			for nIdx, node := range layer.nodes {
+				for wIdx, _ := range node.weights {
+					for _, nextNode := range fc.layers[lIdx+1].nodes {
+						node.delta += nextNode.delta * nextNode.weights[nIdx]
 					}
-					if i == 0 {
-						node.netErr[k] = node.delta * sigmoidPrime(node.output) * input[j]
+					delta := node.delta * sigmoidPrime(node.output)
+					if lIdx == 0 {
+						node.netErr[wIdx] = delta * input[wIdx]
 					} else {
-						node.netErr[k] = node.delta * sigmoidPrime(node.output) * node.weights[k]
+						node.netErr[wIdx] = delta * fc.layers[lIdx-1].nodes[wIdx].output
 					}
 				}
 			}
