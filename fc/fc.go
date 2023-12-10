@@ -23,7 +23,7 @@ type layer struct {
 // in code but rather is just an input to the first hidden layer.
 type FC struct {
 	layers []*layer
-	sizes  []uint
+	sizes  []uint // sizes of the individual layers. []sizes{input, hidden layers..., output}
 }
 
 // "sizes" are the individual sizes of each layer in the network with
@@ -77,10 +77,12 @@ func (fc *FC) feedfoward(input []float64) {
 	}
 }
 
-func (fc *FC) backpropagation(input, truth []float64) {
+func (fc *FC) backpropagation(input, truth []float64) float64 {
 	if len(fc.output()) != len(truth) {
 		panic("truth vector and output layer length do not match")
 	}
+
+	var loss float64
 
 	// loop back through all layers
 	for lIdx := len(fc.layers) - 1; lIdx >= 0; lIdx-- {
@@ -90,6 +92,9 @@ func (fc *FC) backpropagation(input, truth []float64) {
 			for nIdx, node := range layer.nodes {
 				// derivative of loss function * derivative of logistic function
 				node.delta = (node.output - truth[nIdx]) * sigmoidPrime(node.output)
+
+				// keep track of loss for stats
+				loss += mse(truth[nIdx], node.output)
 
 				for wIdx := range node.weights {
 					// node.delta * derivative of net input function
@@ -113,6 +118,8 @@ func (fc *FC) backpropagation(input, truth []float64) {
 			}
 		}
 	}
+
+	return loss / float64(len(fc.outputLayer().nodes))
 }
 
 func (fc *FC) updateWeights(learningRate float64) {
@@ -150,7 +157,7 @@ func (fc *FC) Predict(input []float64) []float64 {
 	return fc.output()
 }
 
-func (fc *FC) Train(dataset, truth [][]float64, learningRate float64, epochs uint) {
+func (fc *FC) Train(dataset, truth [][]float64, learningRate float64, epochs uint) float64 {
 	if len(dataset) < 1 {
 		panic("dataset must be populated for training")
 	}
@@ -158,19 +165,24 @@ func (fc *FC) Train(dataset, truth [][]float64, learningRate float64, epochs uin
 		panic("dataset length does not equal ground truth vector length")
 	}
 	if learningRate <= 0 {
-		panic("learning rate must be a positive number")
+		panic("learning rate must be a number greater than zero")
 	}
-	if epochs <= 0 {
-		panic("epochs must be a positive number")
+	if epochs == 0 {
+		panic("epochs must be a number greater than zero")
 	}
 
+	var loss float64
 	for i := 0; i < int(epochs); i++ {
 		for j, input := range dataset {
 			fc.feedfoward(input)
-			fc.backpropagation(input, truth[j])
+
+			loss = fc.backpropagation(input, truth[j])
+
 			fc.updateWeights(learningRate)
 		}
 	}
+
+	return loss // return last lost calculated
 }
 
 func sigmoid(x float64) float64 {
@@ -192,4 +204,8 @@ func dot(x, y []float64) float64 {
 	}
 
 	return sum
+}
+
+func mse(target, output float64) float64 {
+	return math.Pow(target-output, 2)
 }
