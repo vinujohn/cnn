@@ -26,9 +26,10 @@ type FC struct {
 	sizes  []uint // sizes of the individual layers. []sizes{input, hidden layers..., output}
 }
 
-// "sizes" are the individual sizes of each layer in the network with
-// the first layer being the input layer and the last layer being the
-// output layer.  Minimum of 2 sizes are needed.
+// NewFC will create a network with the sizes specified with randomized
+// weights and biases.  "sizes" are the individual sizes of each layer
+// in the network with the first layer being the input layer and the last layer
+// being the output layer.  Minimum of 2 sizes are needed.
 func NewFC(sizes ...uint) *FC {
 	if len(sizes) < 2 {
 		panic("sizes cannot be less than 2")
