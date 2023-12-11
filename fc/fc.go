@@ -42,10 +42,11 @@ func NewFC(sizes ...uint) *FC {
 			panic("invalid layer size. must be 1 or greater")
 		}
 
-		// initialize weights and biases with random values
 		layers[i] = &layer{
 			nodes: make([]*fcNode, size),
 		}
+
+		// initialize weights and biases with random values
 		for j := range layers[i].nodes {
 			weights := make([]float64, sizes[i]) // len = previous layer node size
 			for k := range weights {
@@ -69,11 +70,13 @@ func NewFC(sizes ...uint) *FC {
 func (fc *FC) feedfoward(input []float64) {
 	for _, layer := range fc.layers {
 		output := make([]float64, len(layer.nodes))
+
 		for i, node := range layer.nodes {
 			net := dot(node.weights, input) + node.bias
 			node.output = sigmoid(net)
 			output[i] = node.output
 		}
+
 		input = output
 	}
 }
@@ -109,7 +112,9 @@ func (fc *FC) backpropagation(input, truth []float64) float64 {
 					for _, nextNode := range fc.layers[lIdx+1].nodes {
 						node.delta += nextNode.delta * nextNode.weights[nIdx]
 					}
+
 					node.delta *= sigmoidPrime(node.output)
+
 					if lIdx == 0 {
 						node.netErr[wIdx] = node.delta * input[wIdx]
 					} else {
@@ -129,6 +134,7 @@ func (fc *FC) updateWeightsAndBiases(learningRate float64) {
 			for i := range node.weights {
 				node.weights[i] -= learningRate * node.netErr[i]
 			}
+
 			node.bias -= learningRate * node.delta
 		}
 	}
@@ -176,6 +182,7 @@ func (fc *FC) Train(dataset, truth [][]float64, learningRate float64, epochs uin
 	var loss float64
 	for i := 0; i < int(epochs); i++ {
 		loss = 0.0
+
 		for j, input := range dataset {
 			fc.feedfoward(input)
 
