@@ -9,12 +9,12 @@ type fcNode struct {
 	weights []float64 // weights for input from previous layer
 	delta   float64   // derivative of loss function * derivative of logistic function
 	netErr  []float64 // delta * derivative of input
-	output  float64   // output for all nodes in this layer
+	output  float64   // output for this node
+	bias    float64   // bias for this node
 }
 
 type layer struct {
 	nodes []*fcNode
-	bias  float64 // same bias for all nodes in this layer
 }
 
 // FC is a fully connected network which is made up of layers of nodes.
@@ -44,7 +44,6 @@ func NewFC(sizes ...uint) *FC {
 		// initialize weights and biases with random values
 		layers[i] = &layer{
 			nodes: make([]*fcNode, size),
-			bias:  rand.NormFloat64(),
 		}
 		for j := range layers[i].nodes {
 			weights := make([]float64, sizes[i]) // len = previous layer node size
@@ -54,6 +53,7 @@ func NewFC(sizes ...uint) *FC {
 
 			layers[i].nodes[j] = &fcNode{
 				weights: weights,
+				bias:    rand.NormFloat64(),
 				netErr:  make([]float64, sizes[i]), // len = previous layer node size
 			}
 		}
@@ -69,7 +69,7 @@ func (fc *FC) feedfoward(input []float64) {
 	for _, layer := range fc.layers {
 		output := make([]float64, len(layer.nodes))
 		for i, node := range layer.nodes {
-			net := dot(node.weights, input) + layer.bias
+			net := dot(node.weights, input) + node.bias
 			node.output = sigmoid(net)
 			output[i] = node.output
 		}
@@ -108,11 +108,11 @@ func (fc *FC) backpropagation(input, truth []float64) float64 {
 					for _, nextNode := range fc.layers[lIdx+1].nodes {
 						node.delta += nextNode.delta * nextNode.weights[nIdx]
 					}
-					delta := node.delta * sigmoidPrime(node.output)
+					node.delta *= sigmoidPrime(node.output)
 					if lIdx == 0 {
-						node.netErr[wIdx] = delta * input[wIdx]
+						node.netErr[wIdx] = node.delta * input[wIdx]
 					} else {
-						node.netErr[wIdx] = delta * fc.layers[lIdx-1].nodes[wIdx].output
+						node.netErr[wIdx] = node.delta * fc.layers[lIdx-1].nodes[wIdx].output
 					}
 				}
 			}
@@ -122,12 +122,13 @@ func (fc *FC) backpropagation(input, truth []float64) float64 {
 	return loss / float64(len(fc.outputLayer().nodes))
 }
 
-func (fc *FC) updateWeights(learningRate float64) {
+func (fc *FC) updateWeightsAndBiases(learningRate float64) {
 	for _, layer := range fc.layers {
 		for _, node := range layer.nodes {
 			for i := range node.weights {
 				node.weights[i] -= learningRate * node.netErr[i]
 			}
+			node.bias -= learningRate * node.delta
 		}
 	}
 }
@@ -173,16 +174,17 @@ func (fc *FC) Train(dataset, truth [][]float64, learningRate float64, epochs uin
 
 	var loss float64
 	for i := 0; i < int(epochs); i++ {
+		loss = 0.0
 		for j, input := range dataset {
 			fc.feedfoward(input)
 
-			loss = fc.backpropagation(input, truth[j])
+			loss += fc.backpropagation(input, truth[j])
 
-			fc.updateWeights(learningRate)
+			fc.updateWeightsAndBiases(learningRate)
 		}
 	}
 
-	return loss // return last lost calculated
+	return loss / float64(len(dataset)) // return last lost calculated for last epoch
 }
 
 func sigmoid(x float64) float64 {

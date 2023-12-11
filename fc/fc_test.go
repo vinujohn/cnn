@@ -95,14 +95,16 @@ func Example_2_2_2_FC() *FC {
 	fc.layers[0].nodes[0].weights[1] = .20
 	fc.layers[0].nodes[1].weights[0] = .25
 	fc.layers[0].nodes[1].weights[1] = .30
-	fc.layers[0].bias = .35
+	fc.layers[0].nodes[0].bias = .35
+	fc.layers[0].nodes[1].bias = .35
 
 	// output layer
 	fc.layers[1].nodes[0].weights[0] = .40
 	fc.layers[1].nodes[0].weights[1] = .45
 	fc.layers[1].nodes[1].weights[0] = .50
 	fc.layers[1].nodes[1].weights[1] = .55
-	fc.layers[1].bias = .60
+	fc.layers[1].nodes[0].bias = .60
+	fc.layers[1].nodes[1].bias = .60
 
 	return fc
 }
