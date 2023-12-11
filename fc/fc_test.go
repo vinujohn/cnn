@@ -30,16 +30,16 @@ func TestNewFC_Panic(t *testing.T) {
 func TestNewFC_Success(t *testing.T) {
 	t.Run("3_2_1_network", func(t *testing.T) {
 		fc := NewFC(3, 2, 1)
-		assert.Len(t, fc.layers, 2)
+		assert.Len(t, fc.Layers, 2)
 
 		// 2 nodes for layer 0 with 3 weights each
-		assert.Len(t, fc.layers[0].nodes, 2)
-		assert.Len(t, fc.layers[0].nodes[0].weights, 3)
-		assert.Len(t, fc.layers[0].nodes[1].weights, 3)
+		assert.Len(t, fc.Layers[0].Nodes, 2)
+		assert.Len(t, fc.Layers[0].Nodes[0].Weights, 3)
+		assert.Len(t, fc.Layers[0].Nodes[1].Weights, 3)
 
 		// 1 node for layer 1 with 2 weights each
-		assert.Len(t, fc.layers[1].nodes, 1)
-		assert.Len(t, fc.layers[1].nodes[0].weights, 2)
+		assert.Len(t, fc.Layers[1].Nodes, 1)
+		assert.Len(t, fc.Layers[1].Nodes[0].Weights, 2)
 	})
 }
 
@@ -70,6 +70,49 @@ func TestTrain_Success(t *testing.T) {
 	})
 }
 
+func TestSaveLoad_Success(t *testing.T) {
+	t.Run("2_2_2_network", func(t *testing.T) {
+		fc := Example_2_2_2_FC()
+
+		fc.Train([][]float64{{.05, .10}}, [][]float64{{0.01, .99}}, 0.5, 10000)
+
+		err := fc.Save("./test.gob")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		fc2, err := Load("./test.gob")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, fc.Sizes, fc2.Sizes)
+		assert.Equal(t, fc.Layers[0].Nodes[0].Weights, fc2.Layers[0].Nodes[0].Weights)
+		assert.Equal(t, fc.Layers[0].Nodes[0].Bias, fc2.Layers[0].Nodes[0].Bias)
+		assert.Equal(t, fc.Layers[0].Nodes[0].Delta, fc2.Layers[0].Nodes[0].Delta)
+		assert.Equal(t, fc.Layers[0].Nodes[0].NetErr, fc2.Layers[0].Nodes[0].NetErr)
+		assert.Equal(t, fc.Layers[0].Nodes[0].Output, fc2.Layers[0].Nodes[0].Output)
+
+		assert.Equal(t, fc.Layers[0].Nodes[1].Weights, fc2.Layers[0].Nodes[1].Weights)
+		assert.Equal(t, fc.Layers[0].Nodes[1].Bias, fc2.Layers[0].Nodes[1].Bias)
+		assert.Equal(t, fc.Layers[0].Nodes[1].Delta, fc2.Layers[0].Nodes[1].Delta)
+		assert.Equal(t, fc.Layers[0].Nodes[1].NetErr, fc2.Layers[0].Nodes[1].NetErr)
+		assert.Equal(t, fc.Layers[0].Nodes[1].Output, fc2.Layers[0].Nodes[1].Output)
+
+		assert.Equal(t, fc.Layers[1].Nodes[0].Weights, fc2.Layers[1].Nodes[0].Weights)
+		assert.Equal(t, fc.Layers[1].Nodes[0].Bias, fc2.Layers[1].Nodes[0].Bias)
+		assert.Equal(t, fc.Layers[1].Nodes[0].Delta, fc2.Layers[1].Nodes[0].Delta)
+		assert.Equal(t, fc.Layers[1].Nodes[0].NetErr, fc2.Layers[1].Nodes[0].NetErr)
+		assert.Equal(t, fc.Layers[1].Nodes[0].Output, fc2.Layers[1].Nodes[0].Output)
+
+		assert.Equal(t, fc.Layers[1].Nodes[1].Weights, fc2.Layers[1].Nodes[1].Weights)
+		assert.Equal(t, fc.Layers[1].Nodes[1].Bias, fc2.Layers[1].Nodes[1].Bias)
+		assert.Equal(t, fc.Layers[1].Nodes[1].Delta, fc2.Layers[1].Nodes[1].Delta)
+		assert.Equal(t, fc.Layers[1].Nodes[1].NetErr, fc2.Layers[1].Nodes[1].NetErr)
+		assert.Equal(t, fc.Layers[1].Nodes[1].Output, fc2.Layers[1].Nodes[1].Output)
+	})
+}
+
 func nodesOutput(nodes []*fcNode) string {
 	var s string
 
@@ -81,7 +124,7 @@ func nodesOutput(nodes []*fcNode) string {
 		netErr: %v
 		output: %v
 		*****************
-		`, i, node.weights, node.delta, node.netErr, node.output)
+		`, i, node.Weights, node.Delta, node.NetErr, node.Output)
 	}
 
 	return s
@@ -91,20 +134,20 @@ func nodesOutput(nodes []*fcNode) string {
 func Example_2_2_2_FC() *FC {
 	fc := NewFC(2, 2, 2)
 	// hidden layer
-	fc.layers[0].nodes[0].weights[0] = .15
-	fc.layers[0].nodes[0].weights[1] = .20
-	fc.layers[0].nodes[1].weights[0] = .25
-	fc.layers[0].nodes[1].weights[1] = .30
-	fc.layers[0].nodes[0].bias = .35
-	fc.layers[0].nodes[1].bias = .35
+	fc.Layers[0].Nodes[0].Weights[0] = .15
+	fc.Layers[0].Nodes[0].Weights[1] = .20
+	fc.Layers[0].Nodes[1].Weights[0] = .25
+	fc.Layers[0].Nodes[1].Weights[1] = .30
+	fc.Layers[0].Nodes[0].Bias = .35
+	fc.Layers[0].Nodes[1].Bias = .35
 
 	// output layer
-	fc.layers[1].nodes[0].weights[0] = .40
-	fc.layers[1].nodes[0].weights[1] = .45
-	fc.layers[1].nodes[1].weights[0] = .50
-	fc.layers[1].nodes[1].weights[1] = .55
-	fc.layers[1].nodes[0].bias = .60
-	fc.layers[1].nodes[1].bias = .60
+	fc.Layers[1].Nodes[0].Weights[0] = .40
+	fc.Layers[1].Nodes[0].Weights[1] = .45
+	fc.Layers[1].Nodes[1].Weights[0] = .50
+	fc.Layers[1].Nodes[1].Weights[1] = .55
+	fc.Layers[1].Nodes[0].Bias = .60
+	fc.Layers[1].Nodes[1].Bias = .60
 
 	return fc
 }

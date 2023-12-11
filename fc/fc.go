@@ -6,15 +6,15 @@ import (
 )
 
 type fcNode struct {
-	weights []float64 // weights for input from previous layer
-	delta   float64   // derivative of loss function * derivative of logistic function
-	netErr  []float64 // delta * derivative of input
-	output  float64   // output for this node
-	bias    float64   // bias for this node
+	Weights []float64 // weights for input from previous layer
+	Delta   float64   // derivative of loss function * derivative of logistic function
+	NetErr  []float64 // delta * derivative of input
+	Output  float64   // output for this node
+	Bias    float64   // bias for this node
 }
 
 type layer struct {
-	nodes []*fcNode
+	Nodes []*fcNode
 }
 
 // FC is a fully connected network which is made up of layers of nodes.
@@ -22,8 +22,8 @@ type layer struct {
 // and the other being an output layer.  The input layer is not modeled
 // in code but rather is just an input to the first hidden layer.
 type FC struct {
-	layers []*layer
-	sizes  []uint // sizes of the individual layers. []sizes{input, hidden layers..., output}
+	Layers []*layer
+	Sizes  []uint // sizes of the individual layers. []sizes{input, hidden layers..., output}
 }
 
 // NewFC will create a network with the sizes specified with randomized
@@ -43,38 +43,38 @@ func NewFC(sizes ...uint) *FC {
 		}
 
 		layers[i] = &layer{
-			nodes: make([]*fcNode, size),
+			Nodes: make([]*fcNode, size),
 		}
 
 		// initialize weights and biases with random values
-		for j := range layers[i].nodes {
+		for j := range layers[i].Nodes {
 			weights := make([]float64, sizes[i]) // len = previous layer node size
 			for k := range weights {
 				weights[k] = rand.NormFloat64()
 			}
 
-			layers[i].nodes[j] = &fcNode{
-				weights: weights,
-				bias:    rand.NormFloat64(),
-				netErr:  make([]float64, sizes[i]), // len = previous layer node size
+			layers[i].Nodes[j] = &fcNode{
+				Weights: weights,
+				Bias:    rand.NormFloat64(),
+				NetErr:  make([]float64, sizes[i]), // len = previous layer node size
 			}
 		}
 	}
 
 	return &FC{
-		layers: layers,
-		sizes:  sizes,
+		Layers: layers,
+		Sizes:  sizes,
 	}
 }
 
 func (fc *FC) feedfoward(input []float64) {
-	for _, layer := range fc.layers {
-		output := make([]float64, len(layer.nodes))
+	for _, layer := range fc.Layers {
+		output := make([]float64, len(layer.Nodes))
 
-		for i, node := range layer.nodes {
-			net := dot(node.weights, input) + node.bias
-			node.output = sigmoid(net)
-			output[i] = node.output
+		for i, node := range layer.Nodes {
+			net := dot(node.Weights, input) + node.Bias
+			node.Output = sigmoid(net)
+			output[i] = node.Output
 		}
 
 		input = output
@@ -89,74 +89,74 @@ func (fc *FC) backpropagation(input, truth []float64) float64 {
 	var loss float64
 
 	// loop back through all layers
-	for lIdx := len(fc.layers) - 1; lIdx >= 0; lIdx-- {
-		layer := fc.layers[lIdx]
+	for lIdx := len(fc.Layers) - 1; lIdx >= 0; lIdx-- {
+		layer := fc.Layers[lIdx]
 		// handle output layer
 		if layer == fc.outputLayer() {
-			for nIdx, node := range layer.nodes {
+			for nIdx, node := range layer.Nodes {
 				// derivative of loss function * derivative of logistic function
-				node.delta = (node.output - truth[nIdx]) * sigmoidPrime(node.output)
+				node.Delta = (node.Output - truth[nIdx]) * sigmoidPrime(node.Output)
 
 				// keep track of loss for stats
-				loss += mse(truth[nIdx], node.output)
+				loss += mse(truth[nIdx], node.Output)
 
-				for wIdx := range node.weights {
+				for wIdx := range node.Weights {
 					// node.delta * derivative of net input function
-					node.netErr[wIdx] = node.delta * fc.layers[lIdx-1].nodes[wIdx].output
+					node.NetErr[wIdx] = node.Delta * fc.Layers[lIdx-1].Nodes[wIdx].Output
 				}
 			}
 		} else {
 			// handle input and hidden layers
-			for nIdx, node := range layer.nodes {
-				for wIdx, _ := range node.weights {
-					for _, nextNode := range fc.layers[lIdx+1].nodes {
-						node.delta += nextNode.delta * nextNode.weights[nIdx]
+			for nIdx, node := range layer.Nodes {
+				for wIdx, _ := range node.Weights {
+					for _, nextNode := range fc.Layers[lIdx+1].Nodes {
+						node.Delta += nextNode.Delta * nextNode.Weights[nIdx]
 					}
 
-					node.delta *= sigmoidPrime(node.output)
+					node.Delta *= sigmoidPrime(node.Output)
 
 					if lIdx == 0 {
-						node.netErr[wIdx] = node.delta * input[wIdx]
+						node.NetErr[wIdx] = node.Delta * input[wIdx]
 					} else {
-						node.netErr[wIdx] = node.delta * fc.layers[lIdx-1].nodes[wIdx].output
+						node.NetErr[wIdx] = node.Delta * fc.Layers[lIdx-1].Nodes[wIdx].Output
 					}
 				}
 			}
 		}
 	}
 
-	return loss / float64(len(fc.outputLayer().nodes))
+	return loss / float64(len(fc.outputLayer().Nodes))
 }
 
 func (fc *FC) updateWeightsAndBiases(learningRate float64) {
-	for _, layer := range fc.layers {
-		for _, node := range layer.nodes {
-			for i := range node.weights {
-				node.weights[i] -= learningRate * node.netErr[i]
+	for _, layer := range fc.Layers {
+		for _, node := range layer.Nodes {
+			for i := range node.Weights {
+				node.Weights[i] -= learningRate * node.NetErr[i]
 			}
 
-			node.bias -= learningRate * node.delta
+			node.Bias -= learningRate * node.Delta
 		}
 	}
 }
 
 func (fc *FC) outputLayer() *layer {
-	return fc.layers[len(fc.layers)-1]
+	return fc.Layers[len(fc.Layers)-1]
 }
 
 func (fc *FC) output() []float64 {
-	nodes := fc.outputLayer().nodes
+	nodes := fc.outputLayer().Nodes
 	output := make([]float64, len(nodes))
 
 	for i := range output {
-		output[i] = nodes[i].output
+		output[i] = nodes[i].Output
 	}
 
 	return output
 }
 
 func (fc *FC) Predict(input []float64) []float64 {
-	if len(input) != int(fc.sizes[0]) {
+	if len(input) != int(fc.Sizes[0]) {
 		panic("length of input does not equal expected input length")
 	}
 
