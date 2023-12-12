@@ -58,13 +58,10 @@ func TestTrain_Success(t *testing.T) {
 	t.Run("2_2_2_network", func(t *testing.T) {
 		fc := example_2_2_2()
 
-		loss := fc.Train([][]float64{{.05, .10}}, [][]float64{{0.01, .99}}, 0.5, 10000)
+		fc.Train([][]float64{{.05, .10}}, [][]float64{{0.01, .99}}, 0.5, 10000)
 
 		prediction := fc.Predict([]float64{.05, .10})
 
-		t.Logf("Loss: %.20f", loss)
-
-		assert.InDelta(t, 3e-6, loss, 1e-6)
 		assert.InDelta(t, 0.01, prediction[0], 0.002)
 		assert.InDelta(t, 0.99, prediction[1], 0.002)
 	})

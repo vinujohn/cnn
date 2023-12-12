@@ -1,6 +1,7 @@
 package fc
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 )
@@ -165,7 +166,7 @@ func (fc *FC) Predict(input []float64) []float64 {
 	return fc.output()
 }
 
-func (fc *FC) Train(dataset, truth [][]float64, learningRate float64, epochs uint) float64 {
+func (fc *FC) Train(dataset, truth [][]float64, learningRate float64, epochs uint) {
 	if len(dataset) < 1 {
 		panic("dataset must be populated for training")
 	}
@@ -190,9 +191,9 @@ func (fc *FC) Train(dataset, truth [][]float64, learningRate float64, epochs uin
 
 			fc.updateWeightsAndBiases(learningRate)
 		}
-	}
 
-	return loss / float64(len(dataset)) // return last lost calculated for last epoch
+		fmt.Printf("Epoch: %d Loss: %f\n", i+1, loss/float64(len(dataset)))
+	}
 }
 
 func sigmoid(x float64) float64 {
