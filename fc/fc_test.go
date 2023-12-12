@@ -45,7 +45,7 @@ func TestNewFC_Success(t *testing.T) {
 
 func TestPredict_Success(t *testing.T) {
 	t.Run("2_2_2_network", func(t *testing.T) {
-		fc := Example_2_2_2_FC()
+		fc := example_2_2_2()
 
 		prediction := fc.Predict([]float64{.05, .10})
 
@@ -56,7 +56,7 @@ func TestPredict_Success(t *testing.T) {
 
 func TestTrain_Success(t *testing.T) {
 	t.Run("2_2_2_network", func(t *testing.T) {
-		fc := Example_2_2_2_FC()
+		fc := example_2_2_2()
 
 		loss := fc.Train([][]float64{{.05, .10}}, [][]float64{{0.01, .99}}, 0.5, 10000)
 
@@ -72,7 +72,7 @@ func TestTrain_Success(t *testing.T) {
 
 func TestSaveLoad_Success(t *testing.T) {
 	t.Run("2_2_2_network", func(t *testing.T) {
-		fc := Example_2_2_2_FC()
+		fc := example_2_2_2()
 
 		fc.Train([][]float64{{.05, .10}}, [][]float64{{0.01, .99}}, 0.5, 10000)
 
@@ -131,7 +131,7 @@ func nodesOutput(nodes []*fcNode) string {
 }
 
 // https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example
-func Example_2_2_2_FC() *FC {
+func example_2_2_2() *FC {
 	fc := NewFC(2, 2, 2)
 	// hidden layer
 	fc.Layers[0].Nodes[0].Weights[0] = .15
