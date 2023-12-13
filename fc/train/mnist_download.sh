@@ -5,10 +5,10 @@ trainingLabels="train-labels-idx1-ubyte"
 testImages="t10k-images-idx3-ubyte"
 testLabels="t10k-labels-idx1-ubyte"
 
-trainImagesURL="https://web.archive.org/web/20220331225332/http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz"
-trainLabelsURL="https://web.archive.org/web/20220331225243/http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"
-testImagesURL="https://web.archive.org/web/20220331225223if_/http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz"
-testLabelsURL="https://web.archive.org/web/20220331225222if_/http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz"
+trainImagesURL="https://raw.githubusercontent.com/HIPS/hypergrad/master/data/mnist/train-images-idx3-ubyte.gz"
+trainLabelsURL="https://raw.githubusercontent.com/HIPS/hypergrad/master/data/mnist/train-labels-idx1-ubyte.gz"
+testImagesURL="https://raw.githubusercontent.com/HIPS/hypergrad/master/data/mnist/t10k-images-idx3-ubyte.gz"
+testLabelsURL="https://raw.githubusercontent.com/HIPS/hypergrad/master/data/mnist/t10k-labels-idx1-ubyte.gz"
 
 outputDir="./fc/train/data" 
 

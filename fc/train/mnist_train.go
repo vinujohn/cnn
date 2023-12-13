@@ -9,24 +9,29 @@ import (
 	"github.com/vinujohn/dnn-learning/fc"
 )
 
+// Explaination of MNIST dataset format
+// https://web.archive.org/web/20220331230320/http://yann.lecun.com/exdb/mnist/
+
 const (
 	ImagesMagicNum = 2051
 	LabelsMagicNum = 2049
 
 	LearningRate = 0.01
 	Epochs       = 10
+
+	ModelFile = "NN_200_80_10_LR_0_01_EP_10.gob"
 )
 
 func main() {
-	//train()
+	train()
 	test()
 }
 
 func train() {
-	images := processImages("./fc/train/data/train-images-idx3-ubyte", ImagesMagicNum)
-	labels, _ := processLabels("./fc/train/data/train-labels-idx1-ubyte", LabelsMagicNum)
+	images := parseImages("./fc/train/data/train-images-idx3-ubyte", ImagesMagicNum)
+	labels, _ := parseLabels("./fc/train/data/train-labels-idx1-ubyte", LabelsMagicNum)
 
-	network := fc.NewFC(784, 800, 10)
+	network := fc.NewFC(784, 200, 80, 10)
 
 	fmt.Println("***************************")
 	fmt.Println("Begin Training")
@@ -36,14 +41,14 @@ func train() {
 	network.Train(images, labels, LearningRate, Epochs)
 	fmt.Println("Training Time:", time.Since(then))
 
-	network.Save("LR_0_01_EP_10.gob")
+	network.Save(ModelFile)
 }
 
 func test() {
-	images := processImages("./fc/train/data/t10k-images-idx3-ubyte", ImagesMagicNum)
-	_, labels := processLabels("./fc/train/data/t10k-labels-idx1-ubyte", LabelsMagicNum)
+	images := parseImages("./fc/train/data/t10k-images-idx3-ubyte", ImagesMagicNum)
+	_, labels := parseLabels("./fc/train/data/t10k-labels-idx1-ubyte", LabelsMagicNum)
 
-	network, err := fc.Load("LR_0_01_EP_10.gob")
+	network, err := fc.Load(ModelFile)
 	if err != nil {
 		panic(err)
 	}
@@ -51,29 +56,22 @@ func test() {
 	fmt.Println("***************************")
 	fmt.Println("Begin Testing")
 
-	var yay int
+	var yay float64
 	for i := range images {
 		out := network.Predict(images[i])
 		if labels[i] == indexOfMax(out) {
 			yay++
 		}
+		// else {
+		// 	writeFile(images[i], i, labels[i], indexOfMax(out))
+		// }
 	}
 
-	fmt.Printf("Num Correct:%d\n", yay)
-	fmt.Printf("Percentage Correct:%d%%\n", yay/len(labels))
+	fmt.Printf("Num Correct:%.0f\n", yay)
+	fmt.Printf("Percentage Correct:%.2f%%\n", yay/float64(len(labels))*100)
 }
 
-func indexOfMax(s []float64) byte {
-	var max byte
-	for i, v := range s {
-		if v > s[max] {
-			max = byte(i)
-		}
-	}
-	return max
-}
-
-func processImages(filePath string, expectedMagicNum int) [][]float64 {
+func parseImages(filePath string, expectedMagicNum int) [][]float64 {
 	f, err := os.Open(filePath)
 	if err != nil {
 		panic(fmt.Sprintf("could not open file. %v", err))
@@ -105,25 +103,28 @@ func processImages(filePath string, expectedMagicNum int) [][]float64 {
 
 		buf := make([]byte, numPixels)
 
-		_, err = f.Read(buf)
+		numRead, err := f.Read(buf)
 		if err != nil {
 			panic(fmt.Sprintf("could not read into buffer. %v", err))
 		}
+		if numRead != int(numPixels) {
+			panic(fmt.Sprintf("could not read correct number of pixels. %d vs %d", numRead, numPixels))
+		}
 
-		ret[i] = convert(buf)
+		ret[i] = convertByteSliceToFloat64Slice(buf)
 	}
 
 	return ret
 }
 
-func processLabels(filePath string, expectedMagicNum int) ([][]float64, []byte) {
+func parseLabels(filePath string, expectedMagicNum int) ([][]float64, []byte) {
 	f, err := os.Open(filePath)
 	if err != nil {
 		panic(fmt.Sprintf("could not open file. %v", err))
 	}
 	defer f.Close()
 
-	header := make([]byte, 16)
+	header := make([]byte, 8)
 	_, err = f.Read(header)
 	if err != nil {
 		panic(fmt.Sprintf("could not read header. %v", err))
@@ -144,9 +145,12 @@ func processLabels(filePath string, expectedMagicNum int) ([][]float64, []byte) 
 
 	buf := make([]byte, numLabels)
 
-	_, err = f.Read(buf)
+	numRead, err := f.Read(buf)
 	if err != nil {
 		panic(fmt.Sprintf("could not read into buffer. %v", err))
+	}
+	if numRead != int(numLabels) {
+		panic(fmt.Sprintf("could not read correct number of labels. %d vs %d", numRead, numLabels))
 	}
 
 	for i := 0; i < int(numLabels); i++ {
@@ -157,7 +161,55 @@ func processLabels(filePath string, expectedMagicNum int) ([][]float64, []byte) 
 	return ret, buf
 }
 
-func convert(img []byte) []float64 {
+// used during debugging
+func writeFile(input []float64, index int, label, prediction byte) {
+
+	// Open a file in append mode, create it if not exists, with write-only permissions
+	file, err := os.OpenFile("./debug/file.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer file.Close()
+
+	// Write each byte as a two-digit hexadecimal number
+	for i, b := range input {
+		if i > 0 && i%28 == 0 {
+			_, err := file.WriteString("\n")
+			if err != nil {
+				fmt.Println("Error writing to file:", err)
+				return
+			}
+		}
+
+		_, err := fmt.Fprintf(file, "%02x ", byte(b))
+		if err != nil {
+			fmt.Println("Error writing to file:", err)
+			return
+		}
+	}
+
+	// Add a new line at the end of the file
+	_, err = file.WriteString("\n")
+	if err != nil {
+		fmt.Println("Error writing newline to file:", err)
+		return
+	}
+
+	fmt.Fprintf(file, "index:%d label:%d prediction:%d\n", index, label, prediction)
+}
+
+func indexOfMax(s []float64) byte {
+	var max byte
+	for i, v := range s {
+		if v > s[max] {
+			max = byte(i)
+		}
+	}
+	return max
+}
+
+func convertByteSliceToFloat64Slice(img []byte) []float64 {
 	ret := make([]float64, len(img))
 
 	for i := range img {
