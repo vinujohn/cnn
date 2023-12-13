@@ -11,6 +11,7 @@ func (fc *FC) Save(filePath string) error {
 	if err != nil {
 		return fmt.Errorf("unable to open file. %v", err)
 	}
+	defer file.Close()
 
 	encoder := gob.NewEncoder(file)
 
@@ -18,7 +19,6 @@ func (fc *FC) Save(filePath string) error {
 	if err != nil {
 		return fmt.Errorf("unable to encode FC struct. %v", err)
 	}
-	defer file.Close()
 
 	return nil
 }
@@ -28,6 +28,7 @@ func Load(filePath string) (*FC, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to open file. %v", err)
 	}
+	defer file.Close()
 
 	decoder := gob.NewDecoder(file)
 
@@ -36,7 +37,6 @@ func Load(filePath string) (*FC, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to decode into FC struct. %v", err)
 	}
-	defer file.Close()
 
 	return fc, nil
 }
