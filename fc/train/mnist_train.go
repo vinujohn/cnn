@@ -32,11 +32,11 @@ func main() {
 
 	lowestTrainingLoss, maxTestCorrect := math.MaxFloat64, 0
 	for i := 1; i <= Epochs; i++ {
-		trainImages := parseImages("./fc/train/data/train-images-idx3-ubyte", ImagesMagicNum)
-		trainLabels, _ := parseLabels("./fc/train/data/train-labels-idx1-ubyte", LabelsMagicNum)
-
 		fmt.Println("***************************")
 		fmt.Println("Begin Training")
+
+		trainImages := parseImages("./fc/train/data/train-images-idx3-ubyte", ImagesMagicNum)
+		trainLabels, _ := parseLabels("./fc/train/data/train-labels-idx1-ubyte", LabelsMagicNum)
 
 		loss := network.Train(trainImages, trainLabels, LearningRate)
 		fmt.Printf("Epoch:%d Training Loss:%f Time So Far:%v\n", i, loss, time.Since(then))
