@@ -216,7 +216,7 @@ func mse(target, output float64) float64 {
 func uniformRandomWithoutZero() float64 {
 	var rnd float64 = 0.0
 
-	for rnd < 0.009 {
+	for rnd < 0.0099 {
 		rnd = rand.Float64()
 	}
 
