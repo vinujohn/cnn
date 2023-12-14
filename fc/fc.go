@@ -50,12 +50,12 @@ func NewFC(sizes ...uint) *FC {
 		for j := range layers[i].Nodes {
 			weights := make([]float64, sizes[i]) // len = previous layer node size
 			for k := range weights {
-				weights[k] = rand.NormFloat64()
+				weights[k] = uniformRandomWithoutZero()
 			}
 
 			layers[i].Nodes[j] = &fcNode{
 				Weights: weights,
-				Bias:    rand.NormFloat64(),
+				Bias:    uniformRandomWithoutZero(),
 				NetErr:  make([]float64, sizes[i]), // len = previous layer node size
 			}
 		}
@@ -211,4 +211,14 @@ func dot(x, y []float64) float64 {
 
 func mse(target, output float64) float64 {
 	return math.Pow(target-output, 2)
+}
+
+func uniformRandomWithoutZero() float64 {
+	var rnd float64 = 0.0
+
+	for rnd < 0.009 {
+		rnd = rand.Float64()
+	}
+
+	return rnd*2 - 1 // [-1, 1]
 }
