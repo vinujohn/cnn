@@ -23,14 +23,14 @@ const (
 	TestingImagesSet  = BaseURL + "t10k-images-idx3-ubyte"
 	TestingLabelsSet  = BaseURL + "t10k-labels-idx1-ubyte"
 
-	LearningRate = 0.01
+	LearningRate = 0.001
 	Epochs       = 10
 
-	ModelFile = "./fc/models/MNIST_200_80_10_LR_0_01_EP_10_%d.gob"
+	ModelFile = "./fc/models/MNIST_32_10_LR_0_001_EP_10_%d.gob"
 )
 
 func main() {
-	network := fc.NewFC(784, 200, 80, 10)
+	network := fc.NewFC(784, 32, 10)
 
 	then := time.Now()
 
@@ -45,7 +45,7 @@ func main() {
 		trainLabels, _ := parseLabels(TrainingLabelsSet, LabelsMagicNum)
 
 		loss := network.Train(trainImages, trainLabels, LearningRate)
-		fmt.Printf("Training Loss:%f Time:%v Time Elapsed:%v\n", loss, time.Now(), time.Since(then))
+		fmt.Printf("Training Loss:%f Time:%s Time Elapsed:%v\n", loss, time.Now().Format("2006-01-02T15:04:05Z07:00"), time.Since(then))
 
 		if loss < lowestTrainingLoss {
 			lowestTrainingLoss = loss
