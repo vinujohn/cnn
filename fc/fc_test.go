@@ -58,7 +58,10 @@ func TestTrain_Success(t *testing.T) {
 	t.Run("2_2_2_network", func(t *testing.T) {
 		fc := example_2_2_2()
 
-		fc.Train([][]float64{{.05, .10}}, [][]float64{{0.01, .99}}, 0.5, 10000)
+		const epochs = 10000
+		for i := 0; i < epochs; i++ {
+			fc.Train([][]float64{{.05, .10}}, [][]float64{{0.01, .99}}, 0.5)
+		}
 
 		prediction := fc.Predict([]float64{.05, .10})
 
@@ -71,7 +74,10 @@ func TestSaveLoad_Success(t *testing.T) {
 	t.Run("2_2_2_network", func(t *testing.T) {
 		fc := example_2_2_2()
 
-		fc.Train([][]float64{{.05, .10}}, [][]float64{{0.01, .99}}, 0.5, 10000)
+		const epochs = 10000
+		for i := 0; i < epochs; i++ {
+			fc.Train([][]float64{{.05, .10}}, [][]float64{{0.01, .99}}, 0.5)
+		}
 
 		err := fc.Save("./test.gob")
 		if err != nil {
