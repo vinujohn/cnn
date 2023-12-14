@@ -17,10 +17,16 @@ const (
 	ImagesMagicNum = 2051
 	LabelsMagicNum = 2049
 
+	BaseURL           = "./fc/train/data/"
+	TrainingImagesSet = BaseURL + "train-images-idx3-ubyte"
+	TrainingLabelsSet = BaseURL + "train-labels-idx1-ubyte"
+	TestingImagesSet  = BaseURL + "t10k-images-idx3-ubyte"
+	TestingLabelsSet  = BaseURL + "t10k-labels-idx1-ubyte"
+
 	LearningRate = 0.01
 	Epochs       = 10
 
-	ModelFile = "./fc/models/NN_200_80_10_LR_0_01_EP_10_%d.gob"
+	ModelFile = "./fc/models/MNIST_200_80_10_LR_0_01_EP_10_%d.gob"
 )
 
 func main() {
@@ -29,25 +35,25 @@ func main() {
 	then := time.Now()
 
 	fmt.Printf("Starting Training/Test Cycle. Learning Rate:%f Epochs:%d\n", LearningRate, Epochs)
+	fmt.Println("***************************")
 
 	lowestTrainingLoss, maxTestCorrect := math.MaxFloat64, 0
 	for i := 1; i <= Epochs; i++ {
-		fmt.Println("***************************")
-		fmt.Println("Begin Training")
+		fmt.Println("Begin Training Epoch:", i)
 
-		trainImages := parseImages("./fc/train/data/train-images-idx3-ubyte", ImagesMagicNum)
-		trainLabels, _ := parseLabels("./fc/train/data/train-labels-idx1-ubyte", LabelsMagicNum)
+		trainImages := parseImages(TrainingImagesSet, ImagesMagicNum)
+		trainLabels, _ := parseLabels(TrainingLabelsSet, LabelsMagicNum)
 
 		loss := network.Train(trainImages, trainLabels, LearningRate)
-		fmt.Printf("Epoch:%d Training Loss:%f Time So Far:%v\n", i, loss, time.Since(then))
+		fmt.Printf("Training Loss:%f Time:%v Time Elapsed:%v\n", loss, time.Now(), time.Since(then))
 
 		if loss < lowestTrainingLoss {
 			lowestTrainingLoss = loss
 
-			testImages := parseImages("./fc/train/data/t10k-images-idx3-ubyte", ImagesMagicNum)
-			_, testLabels := parseLabels("./fc/train/data/t10k-labels-idx1-ubyte", LabelsMagicNum)
+			testImages := parseImages(TestingImagesSet, ImagesMagicNum)
+			_, testLabels := parseLabels(TestingLabelsSet, LabelsMagicNum)
 
-			fmt.Println("Begin Testing")
+			fmt.Println("Begin Testing Epoch:", i)
 
 			var correct int
 			for i := range testImages {
@@ -58,20 +64,20 @@ func main() {
 			}
 
 			percentageCorrect := float64(correct) / float64(len(testLabels)) * 100
-			fmt.Printf("Epoch:%d Correct:%d %% Correct:%.2f%% Time So Far:%v\n", i, correct, percentageCorrect, time.Since(then))
+			fmt.Printf("Correct:%d %%Correct:%.2f%%\n", correct, percentageCorrect)
 
 			if correct > maxTestCorrect {
 				maxTestCorrect = correct
 				network.Save(fmt.Sprintf(ModelFile, i))
 			} else {
-				fmt.Println("correct number of tests is lower than the highest number of correct tests. exiting...")
+				fmt.Println("expected number of correct too low. exiting...")
 				break
 			}
 
 			fmt.Println("***************************")
 
 		} else {
-			fmt.Println("training loss greater than lowest training loss. exiting...")
+			fmt.Println("expected training loss too low. exiting...")
 			break
 		}
 	}
@@ -100,8 +106,8 @@ func parseImages(filePath string, expectedMagicNum int) [][]float64 {
 	cols := binary.BigEndian.Uint32(header[12:16])
 	numPixels := rows * cols
 
-	fmt.Println("processing images file", filePath)
-	fmt.Printf("magicNum:%d, numImages:%d rows:%d cols:%d numPixels:%d\n", magicNum, numImages, rows, cols, numPixels)
+	//fmt.Println("processing images file", filePath)
+	//fmt.Printf("magicNum:%d, numImages:%d rows:%d cols:%d numPixels:%d\n", magicNum, numImages, rows, cols, numPixels)
 
 	ret := make([][]float64, numImages)
 	for i := 0; i < int(numImages); i++ {
@@ -142,8 +148,8 @@ func parseLabels(filePath string, expectedMagicNum int) ([][]float64, []byte) {
 
 	numLabels := binary.BigEndian.Uint32(header[4:8])
 
-	fmt.Println("processing labels file", filePath)
-	fmt.Printf("magicNum:%d, numLabels:%d\n", magicNum, numLabels)
+	//fmt.Println("processing labels file", filePath)
+	//fmt.Printf("magicNum:%d, numLabels:%d\n", magicNum, numLabels)
 
 	ret := make([][]float64, numLabels)
 
