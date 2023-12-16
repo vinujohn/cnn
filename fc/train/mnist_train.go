@@ -231,3 +231,24 @@ func convertByteSliceToFloat64Slice(img []byte) []float64 {
 
 	return ret
 }
+
+func testModelFile(filepath string) {
+	network, err := fc.Load(filepath)
+	if err != nil {
+		panic(fmt.Sprintf("could not load model file. %v", err))
+	}
+
+	testImages := parseImages(TestingImagesSet, ImagesMagicNum)
+	_, testLabels := parseLabels(TestingLabelsSet, LabelsMagicNum)
+
+	var correct int
+	for i := range testImages {
+		out := network.Predict(testImages[i])
+		if testLabels[i] == indexOfMax(out) {
+			correct++
+		}
+	}
+
+	percentageCorrect := float64(correct) / float64(len(testLabels)) * 100
+	fmt.Printf("Correct:%d %%Correct:%.2f%%\n", correct, percentageCorrect)
+}
