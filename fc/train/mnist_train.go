@@ -23,14 +23,14 @@ const (
 	TestingImagesSet  = BaseURL + "t10k-images-idx3-ubyte"
 	TestingLabelsSet  = BaseURL + "t10k-labels-idx1-ubyte"
 
-	LearningRate = 0.001
+	LearningRate = 0.01
 	Epochs       = 10
 
-	ModelFile = "./fc/models/MNIST_32_10_LR_0_001_EP_10_%d.gob"
+	ModelFile = "./fc/models/MNIST_200_80_10_LR_0_01_EP_10_%d.gob"
 )
 
 func main() {
-	network := fc.NewFC(784, 32, 10)
+	network := fc.NewFC(784, 200, 80, 10)
 
 	then := time.Now()
 
@@ -68,7 +68,10 @@ func main() {
 
 			if correct > maxTestCorrect {
 				maxTestCorrect = correct
-				network.Save(fmt.Sprintf(ModelFile, i))
+				err := network.Save(fmt.Sprintf(ModelFile, i))
+				if err != nil {
+					fmt.Printf("unable to save network model. %v\n", err)
+				}
 			} else {
 				fmt.Println("expected number of correct too low. exiting...")
 				break
@@ -223,7 +226,7 @@ func convertByteSliceToFloat64Slice(img []byte) []float64 {
 	ret := make([]float64, len(img))
 
 	for i := range img {
-		ret[i] = float64(img[i])
+		ret[i] = float64(img[i]) / 255
 	}
 
 	return ret
