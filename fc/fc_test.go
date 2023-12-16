@@ -55,15 +55,15 @@ func TestPredict_Success(t *testing.T) {
 }
 
 func TestTrain_Success(t *testing.T) {
-	t.Run("2_2_2_network", func(t *testing.T) {
-		fc := example_2_2_2()
+	t.Run("10_8_4_2_network", func(t *testing.T) {
+		fc := NewFC(10, 8, 4, 2)
 
 		const epochs = 10000
 		for i := 0; i < epochs; i++ {
-			fc.Train([][]float64{{.05, .10}}, [][]float64{{0.01, .99}}, 0.5)
+			fc.Train([][]float64{{.05, .22, .51, .77, .41, .94, .29, .0, .04, .01}}, [][]float64{{0.01, .99}}, 0.5)
 		}
 
-		prediction := fc.Predict([]float64{.05, .10})
+		prediction := fc.Predict([]float64{.05, .22, .51, .77, .41, .94, .29, .0, .04, .01})
 
 		assert.InDelta(t, 0.01, prediction[0], 0.002)
 		assert.InDelta(t, 0.99, prediction[1], 0.002)
@@ -72,7 +72,7 @@ func TestTrain_Success(t *testing.T) {
 
 func TestSaveLoad_Success(t *testing.T) {
 	t.Run("2_2_2_network", func(t *testing.T) {
-		fc := example_2_2_2()
+		fc := NewFC(2, 2, 2)
 
 		const epochs = 10000
 		for i := 0; i < epochs; i++ {
