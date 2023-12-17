@@ -22,10 +22,9 @@ type layer struct {
 // and the other being an output layer.  The input layer is not modeled
 // in code but rather is just an input to the first hidden layer.
 type FC struct {
-	Layers   []*layer
-	Sizes    []uint    // sizes of the individual layers. []sizes{input, hidden layers..., output}
-	outputs  []float64 // output of the network after a feedfoward operation. activationFunc(net)
-	zOutputs []float64 // output of the network after a feedfoward operation before the activation function
+	Layers  []*layer
+	Sizes   []uint    // sizes of the individual layers. []sizes{input, hidden layers..., output}
+	outputs []float64 // output of the network after a feedfoward operation. activationFunc(net)
 }
 
 // NewFC will create a network with the sizes specified with randomized
@@ -105,16 +104,15 @@ func (fc *FC) Train(dataset, targets [][]float64, learningRate float64) float64 
 func (fc *FC) feedfoward(inputs []float64) {
 	for _, layer := range fc.Layers {
 		outputs := make([]float64, len(layer.Nodes))
-		zOutputs := make([]float64, len(layer.Nodes))
 
 		for i, node := range layer.Nodes {
 			net := dot(node.Weights, inputs) + node.Bias
 
-			// save the net output for nodes in the output vector
+			// save the net output for nodes in the output layer
 			// so we can use softmax on it later. use sigmoid on
 			// all other layers.
 			if layer == fc.outputLayer() {
-				zOutputs[i] = net
+				outputs[i] = net
 			} else {
 				node.output = sigmoid(net)
 				outputs[i] = node.output
@@ -122,7 +120,7 @@ func (fc *FC) feedfoward(inputs []float64) {
 		}
 
 		if layer == fc.outputLayer() {
-			softmax := softmaxVector(zOutputs)
+			softmax := softmaxVector(outputs)
 
 			for i, node := range layer.Nodes {
 				outputs[i] = softmax[i]
@@ -130,7 +128,6 @@ func (fc *FC) feedfoward(inputs []float64) {
 			}
 
 			fc.outputs = outputs
-			fc.zOutputs = zOutputs
 		} else {
 			inputs = outputs
 		}
