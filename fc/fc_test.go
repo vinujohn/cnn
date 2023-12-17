@@ -49,8 +49,8 @@ func TestPredict_Success(t *testing.T) {
 
 		prediction := fc.Predict([]float64{.05, .10})
 
-		assert.InDelta(t, 0.75136507, prediction[0], 0.000000001)
-		assert.InDelta(t, 0.772928465, prediction[1], 0.000000001)
+		assert.InDelta(t, 0.470281212, prediction[0], 0.000000001)
+		assert.InDelta(t, 0.529718787, prediction[1], 0.000000001)
 	})
 }
 
