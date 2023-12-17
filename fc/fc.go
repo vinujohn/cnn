@@ -214,20 +214,6 @@ func softmaxVector(zOutputs []float64) []float64 {
 	return ret
 }
 
-func softmaxPrime(nodeIdx int, outputs, zOutputs, targets []float64) float64 {
-	if targets[nodeIdx] == 1.0 {
-		return outputs[nodeIdx] * (1 - outputs[nodeIdx])
-	}
-
-	for i := range targets {
-		if targets[i] == 1.0 {
-			return -outputs[i] * outputs[nodeIdx]
-		}
-	}
-
-	panic("could not get softmax prime")
-}
-
 func dot(x, y []float64) float64 {
 	if len(x) != len(y) {
 		panic("vector inputs for dot product must be equal")
