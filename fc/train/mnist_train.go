@@ -17,24 +17,28 @@ const (
 	ImagesMagicNum = 2051
 	LabelsMagicNum = 2049
 
-	BaseURL           = "./fc/train/data/"
+	BaseURL = "./fc/train/data/"
+	//BaseURL           = "./data/"
 	TrainingImagesSet = BaseURL + "train-images-idx3-ubyte"
 	TrainingLabelsSet = BaseURL + "train-labels-idx1-ubyte"
 	TestingImagesSet  = BaseURL + "t10k-images-idx3-ubyte"
 	TestingLabelsSet  = BaseURL + "t10k-labels-idx1-ubyte"
 
 	LearningRate = 0.01
-	Epochs       = 10
+	Epochs       = 20
 
-	ModelFile = "./fc/models/MNIST_200_80_10_LR_0_01_EP_10_%d.gob"
+	ModelFile = "./fc/models/MNIST_200_80_10_LR_0_01_EP_20_%d.gob"
+)
+
+var (
+	NetworkLayers = []uint{784, 200, 80, 10}
 )
 
 func main() {
-	network := fc.NewFC(784, 200, 80, 10)
-
+	network := fc.NewFC(NetworkLayers...)
 	then := time.Now()
 
-	fmt.Printf("Starting Training/Test Cycle. Learning Rate:%f Epochs:%d\n", LearningRate, Epochs)
+	fmt.Printf("Starting Training/Test Cycle. Network:%v Learning Rate:%f Epochs:%d\n", NetworkLayers, LearningRate, Epochs)
 	fmt.Println("***************************")
 
 	lowestTrainingLoss, maxTestCorrect := math.MaxFloat64, 0
@@ -80,7 +84,7 @@ func main() {
 			fmt.Println("***************************")
 
 		} else {
-			fmt.Println("expected training loss too low. exiting...")
+			fmt.Println("expected training loss too high. exiting...")
 			break
 		}
 	}
@@ -230,4 +234,25 @@ func convertByteSliceToFloat64Slice(img []byte) []float64 {
 	}
 
 	return ret
+}
+
+func testModelFile(filepath string) {
+	network, err := fc.Load(filepath)
+	if err != nil {
+		panic(fmt.Sprintf("could not load model file. %v", err))
+	}
+
+	testImages := parseImages(TestingImagesSet, ImagesMagicNum)
+	_, testLabels := parseLabels(TestingLabelsSet, LabelsMagicNum)
+
+	var correct int
+	for i := range testImages {
+		out := network.Predict(testImages[i])
+		if testLabels[i] == indexOfMax(out) {
+			correct++
+		}
+	}
+
+	percentageCorrect := float64(correct) / float64(len(testLabels)) * 100
+	fmt.Printf("Correct:%d %%Correct:%.2f%%\n", correct, percentageCorrect)
 }

@@ -49,8 +49,8 @@ func TestPredict_Success(t *testing.T) {
 
 		prediction := fc.Predict([]float64{.05, .10})
 
-		assert.InDelta(t, 0.75136507, prediction[0], 0.000000001)
-		assert.InDelta(t, 0.772928465, prediction[1], 0.000000001)
+		assert.InDelta(t, 0.470281212, prediction[0], 0.000000001)
+		assert.InDelta(t, 0.529718787, prediction[1], 0.000000001)
 	})
 }
 
@@ -92,27 +92,15 @@ func TestSaveLoad_Success(t *testing.T) {
 		assert.Equal(t, fc.Sizes, fc2.Sizes)
 		assert.Equal(t, fc.Layers[0].Nodes[0].Weights, fc2.Layers[0].Nodes[0].Weights)
 		assert.Equal(t, fc.Layers[0].Nodes[0].Bias, fc2.Layers[0].Nodes[0].Bias)
-		assert.Equal(t, fc.Layers[0].Nodes[0].Delta, fc2.Layers[0].Nodes[0].Delta)
-		assert.Equal(t, fc.Layers[0].Nodes[0].NetErr, fc2.Layers[0].Nodes[0].NetErr)
-		assert.Equal(t, fc.Layers[0].Nodes[0].Output, fc2.Layers[0].Nodes[0].Output)
 
 		assert.Equal(t, fc.Layers[0].Nodes[1].Weights, fc2.Layers[0].Nodes[1].Weights)
 		assert.Equal(t, fc.Layers[0].Nodes[1].Bias, fc2.Layers[0].Nodes[1].Bias)
-		assert.Equal(t, fc.Layers[0].Nodes[1].Delta, fc2.Layers[0].Nodes[1].Delta)
-		assert.Equal(t, fc.Layers[0].Nodes[1].NetErr, fc2.Layers[0].Nodes[1].NetErr)
-		assert.Equal(t, fc.Layers[0].Nodes[1].Output, fc2.Layers[0].Nodes[1].Output)
 
 		assert.Equal(t, fc.Layers[1].Nodes[0].Weights, fc2.Layers[1].Nodes[0].Weights)
 		assert.Equal(t, fc.Layers[1].Nodes[0].Bias, fc2.Layers[1].Nodes[0].Bias)
-		assert.Equal(t, fc.Layers[1].Nodes[0].Delta, fc2.Layers[1].Nodes[0].Delta)
-		assert.Equal(t, fc.Layers[1].Nodes[0].NetErr, fc2.Layers[1].Nodes[0].NetErr)
-		assert.Equal(t, fc.Layers[1].Nodes[0].Output, fc2.Layers[1].Nodes[0].Output)
 
 		assert.Equal(t, fc.Layers[1].Nodes[1].Weights, fc2.Layers[1].Nodes[1].Weights)
 		assert.Equal(t, fc.Layers[1].Nodes[1].Bias, fc2.Layers[1].Nodes[1].Bias)
-		assert.Equal(t, fc.Layers[1].Nodes[1].Delta, fc2.Layers[1].Nodes[1].Delta)
-		assert.Equal(t, fc.Layers[1].Nodes[1].NetErr, fc2.Layers[1].Nodes[1].NetErr)
-		assert.Equal(t, fc.Layers[1].Nodes[1].Output, fc2.Layers[1].Nodes[1].Output)
 	})
 }
 
@@ -127,7 +115,7 @@ func nodesOutput(nodes []*fcNode) string {
 		netErr: %v
 		output: %v
 		*****************
-		`, i, node.Weights, node.Delta, node.NetErr, node.Output)
+		`, i, node.Weights, node.delta, node.netErr, node.output)
 	}
 
 	return s
