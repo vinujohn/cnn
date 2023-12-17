@@ -38,7 +38,7 @@ func main() {
 	network := fc.NewFC(NetworkLayers...)
 	then := time.Now()
 
-	fmt.Printf("Starting Training/Test Cycle. Network:%v Learning Rate:%f Epochs:%d\n", NetworkLayers, LearningRate, Epochs)
+	fmt.Printf("Starting Training/Test Cycle. Network:%v Learning Rate:%f Epochs:%d Time:%v\n", NetworkLayers, LearningRate, Epochs, time.Now().Format("2006-01-02T15:04:05Z07:00"))
 	fmt.Println("***************************")
 
 	lowestTrainingLoss, maxTestCorrect := math.MaxFloat64, 0
