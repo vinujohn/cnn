@@ -24,10 +24,10 @@ const (
 	TestingImagesSet  = BaseURL + "t10k-images-idx3-ubyte"
 	TestingLabelsSet  = BaseURL + "t10k-labels-idx1-ubyte"
 
-	LearningRate = 0.01
+	LearningRate = 0.1
 	Epochs       = 20
 
-	ModelFile = "./fc/models/MNIST_HL_200_LR_0_01_EP_20_%d.gob"
+	ModelFile = "./fc/models/MNIST_HL_200_LR_0_1_EP_20_%d.gob"
 )
 
 var (
