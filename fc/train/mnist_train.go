@@ -27,11 +27,11 @@ const (
 	LearningRate = 0.01
 	Epochs       = 20
 
-	ModelFile = "./fc/models/MNIST_200_80_10_LR_0_01_EP_20_%d.gob"
+	ModelFile = "./fc/models/MNIST_HL_200_LR_0_01_EP_20_%d.gob"
 )
 
 var (
-	NetworkLayers = []uint{784, 200, 80, 10}
+	NetworkLayers = []uint{784, 200, 10}
 )
 
 func main() {
