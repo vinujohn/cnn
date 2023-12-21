@@ -84,7 +84,7 @@ func TestSaveLoad_Success(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		fc2, err := Load("./test.gob")
+		fc2, err := LoadFromFile("./test.gob")
 		if err != nil {
 			t.Fatal(err)
 		}

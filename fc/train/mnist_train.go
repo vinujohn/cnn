@@ -237,7 +237,7 @@ func convertByteSliceToFloat64Slice(img []byte) []float64 {
 }
 
 func testModelFile(filepath string) {
-	network, err := fc.Load(filepath)
+	network, err := fc.LoadFromFile(filepath)
 	if err != nil {
 		panic(fmt.Sprintf("could not load model file. %v", err))
 	}

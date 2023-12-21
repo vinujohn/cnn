@@ -3,6 +3,7 @@ package fc
 import (
 	"encoding/gob"
 	"fmt"
+	"io"
 	"os"
 )
 
@@ -23,20 +24,24 @@ func (fc *FC) Save(filePath string) error {
 	return nil
 }
 
-func Load(filePath string) (*FC, error) {
+func Load(r io.Reader) (*FC, error) {
+	decoder := gob.NewDecoder(r)
+
+	fc := &FC{}
+	err := decoder.Decode(fc)
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode into FC struct. %v", err)
+	}
+
+	return fc, nil
+}
+
+func LoadFromFile(filePath string) (*FC, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("unable to open file. %v", err)
 	}
 	defer file.Close()
 
-	decoder := gob.NewDecoder(file)
-
-	fc := &FC{}
-	err = decoder.Decode(fc)
-	if err != nil {
-		return nil, fmt.Errorf("unable to decode into FC struct. %v", err)
-	}
-
-	return fc, nil
+	return Load(file)
 }
